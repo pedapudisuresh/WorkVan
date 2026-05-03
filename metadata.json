@@ -1,0 +1,6 @@
+{
+  "name": "WorkVan",
+  "description": "Commute optimizer for Vancouver workers. Integrates Google Maps and Translink for smart scheduling and route planning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
