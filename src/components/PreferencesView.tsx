@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserPreferences } from '../types';
-import { MapPin, Bus, Car, Bike, Info, Search } from 'lucide-react';
+import { MapPin, Bus, Car, Bike, Info, Search, Save, Check } from 'lucide-react';
 
 interface PreferencesViewProps {
   prefs: UserPreferences;
@@ -86,8 +86,23 @@ const AddressAutocomplete: React.FC<{
 };
 
 export const PreferencesView: React.FC<PreferencesViewProps> = ({ prefs, onUpdate }) => {
+  const [localPrefs, setLocalPrefs] = useState<UserPreferences>(prefs);
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Keep local state in sync if parent prefs change (e.g. on mount or reset)
+  useEffect(() => {
+    setLocalPrefs(prefs);
+  }, [prefs]);
+
   const updateField = (field: keyof UserPreferences, value: any) => {
-    onUpdate({ ...prefs, [field]: value });
+    setLocalPrefs(prev => ({ ...prev, [field]: value }));
+    setIsSaved(false); // Reset saved status on change
+  };
+
+  const handleSave = () => {
+    onUpdate(localPrefs);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 3000); // Clear feedback after 3s
   };
 
   return (
@@ -96,14 +111,14 @@ export const PreferencesView: React.FC<PreferencesViewProps> = ({ prefs, onUpdat
         <AddressAutocomplete 
           label="Home Origin"
           placeholder="2455 E 12th Ave, Vancouver"
-          value={prefs.homeAddress}
+          value={localPrefs.homeAddress}
           onChange={(val) => updateField('homeAddress', val)}
         />
 
         <AddressAutocomplete 
           label="Work Destination"
           placeholder="Waterfront Station, Downtown"
-          value={prefs.workAddress}
+          value={localPrefs.workAddress}
           onChange={(val) => updateField('workAddress', val)}
         />
       </div>
@@ -121,7 +136,7 @@ export const PreferencesView: React.FC<PreferencesViewProps> = ({ prefs, onUpdat
               key={mode.id}
               onClick={() => updateField('commuteMode', mode.id)}
               className={`flex flex-col items-center justify-center p-4 rounded transition-all border ${
-                prefs.commuteMode === mode.id
+                localPrefs.commuteMode === mode.id
                   ? 'bg-slate-900 text-amber-500 border-slate-900 shadow-lg'
                   : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
               }`}
@@ -139,7 +154,7 @@ export const PreferencesView: React.FC<PreferencesViewProps> = ({ prefs, onUpdat
             type="number"
             min="0"
             max="120"
-            value={prefs.bufferMinutes}
+            value={localPrefs.bufferMinutes}
             onChange={(e) => updateField('bufferMinutes', parseInt(e.target.value) || 0)}
             className="w-20 font-mono text-sm font-bold text-amber-600 bg-white border border-slate-200 rounded px-3 py-1.5 focus:border-amber-500 outline-none"
           />
@@ -147,6 +162,31 @@ export const PreferencesView: React.FC<PreferencesViewProps> = ({ prefs, onUpdat
         </div>
         <p className="text-[10px] text-slate-400 font-medium italic">Geometric safety margin for consistent scheduling.</p>
       </div>
+
+      <div className="pt-4 flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={isSaved}
+          className={`flex items-center gap-2 px-6 py-3 rounded font-bold uppercase tracking-widest text-xs transition-all shadow-sm ${
+            isSaved 
+              ? 'bg-green-500 text-white cursor-default' 
+              : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95'
+          }`}
+        >
+          {isSaved ? (
+            <>
+              <Check className="w-4 h-4" />
+              Saved Profile
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Save Preferences
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 };
+

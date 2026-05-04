@@ -67,7 +67,7 @@ export default function App() {
           
           <nav className="flex items-center bg-slate-800 p-1 rounded">
             {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Dash' },
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Route' },
               { id: 'schedule', icon: Calendar, label: 'Hours' },
               { id: 'settings', icon: Settings, label: 'Prefs' },
             ].map((tab) => (
